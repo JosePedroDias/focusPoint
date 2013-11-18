@@ -16,16 +16,26 @@
   
   <body>
     <script type="text/javascript">
-    focusPoint(
-      //'http://c1.quickcachr.fotos.sapo.pt/i/N31158003/15958350_juFmT.jpeg' // chinesice
-      //'http://c6.quickcachr.fotos.sapo.pt/i/Nb00234b8/1942474_HfH6q.jpeg' // tango
-      //'http://c4.quickcachr.fotos.sapo.pt/i/Nfc02c553/6409627_K2Z5y.jpeg' // ny
-      'http://c9.quickcachr.fotos.sapo.pt/i/u8f02c6c6/1833_0008psh2.jpg' // eléctrico
-      //'http://c7.quickcachr.fotos.sapo.pt/i/N23134478/15079482_2lL5j.jpeg' // gato
-      //'http://c2.quickcachr.fotos.sapo.pt/i/u59053133/6800974_GMnUB.jpeg' // lisboa
-      //'http://c4.quickcachr.fotos.sapo.pt/i/u8705a3ab/2496677_5oecZ.jpeg' // parque ed. 7o
-    );
-    //, 40, 0.33); // img, tiles, tileCut
+      /*
+       * now one can just add
+       * #<imgUri> <tiles> <cutRatio>
+       * to play with any image and tweaking the difficulty
+       */
+      var h = location.hash;
+      if (!h) { h = '#http://c9.quickcachr.fotos.sapo.pt/i/u8f02c6c6/1833_0008psh2.jpg 20 0.25'; }
+      // the original image used above can be found here: http://fotos.sapo.pt/rgomes/fotos/?uid=S9PHTzBpba2g5631t5od
+      h = h.substring(1).split(' ');
+      var imgUri   = h[0];
+      var nrTiles  = parseInt(h[1], 10);
+      var cutRatio = parseFloat(h[2]);
+      if (isNaN(nrTiles)) {  nrTiles  = 20;   }
+      if (isNaN(cutRatio)) { cutRatio = 0.25; }
+
+      if ('console' in window && 'log' in window.console) {
+        console.log('Calling focusPoint with:\n* imageUri: "%s"\n* nrTiles:  %d\n* cutRatio: %f', imgUri, nrTiles, cutRatio);
+      }
+
+      focusPoint(imgUri, nrTiles, cutRatio);
     </script>
   </body>
 </html>

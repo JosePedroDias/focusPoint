@@ -209,6 +209,9 @@ var focusPoint = function(url, N, CUT_RATIO) {
     iDims = getDims(iEl);
     onReady();
   };
+  iEl.onerror = function() {
+    alert('Image "' + url + '" not found or inaccessible!\n(prefix if with cors.io/ if it\'s a CORS problem)');
+  };
   iEl.style.visibility = 'hidden';
   bEl.appendChild(iEl);
   iEl.src = url;
