@@ -2,7 +2,7 @@
 	/* http://www.jshint.com/docs/ https://github.com/jshint/jshint/blob/master/README.md */
 
     "globals": {
-        "focusPoint": true
+        "alert": true
     },
 
     "boss" :         false,
@@ -19,7 +19,7 @@
     "laxcomma":      true,
     "maxcomplexity": 12,
     "maxdepth":      6,
-    /*"maxparams":     4,*/
+    "maxparams":     4,
     "maxstatements": 60,
     "newcap":        false,
     "noarg":         true,
