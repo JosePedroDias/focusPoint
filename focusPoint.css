@@ -1,5 +1,30 @@
 html, body {
+    height: 100%;
+}
+
+body {
     overflow: hidden;
     margin: 0;
-    height: 100%;
+    padding: 0;
+}
+
+.tiles {
+    position: absolute;
+    left: 50%;
+    top:  50%;
+}
+
+canvas:hover {
+    z-index: 1;
+    box-shadow: 0 0 12px #F0F, 0 0 6px #F0F;
+}
+
+.selected {
+    z-index: 1;
+    /*border: 2px solid #000;*/
+}
+
+canvas {
+    position: absolute;
+    transition: left 500ms, top 500ms, width 500ms, height 500ms;
 }

@@ -1,29 +1,32 @@
 window.focusPoint = function(o) {
 
+    'use strict';
+
+    
+    
     if (!o.imgUri) {
         var err = 'imgUri argument is required!';
-        if (o.onError) {
-            o.onError(err);
-        }
-        else {
-            alert(err);
-        }
+        if (o.onError) { o.onError(err); }
+        else { window.alert(err); }
         return;
     }
 
+    
+    
     var IMG_URI       = o.imgUri;
     var N             = o.nrTiles  || 20;
     var CUT_RATIO     = o.cutRatio || 0.25; // 0 < cr < 0.5
-    var SHUFFLE_TIMES = N;//10;
+    var SHUFFLE_TIMES = N;
 
+    
+    
     var startTime = new Date().valueOf();
 
     var getElapsedTime = function() {
         return Math.round( (new Date().valueOf() - startTime) / 1000 );
     };
 
-    var bEl = document.body;
-    var cEl, cCtx, timer, timerFn;
+    var timer, timerFn;
     if (o.onElapsedTimeChanged) {
         timerFn = function() {
             o.onElapsedTimeChanged( getElapsedTime() );
@@ -31,18 +34,21 @@ window.focusPoint = function(o) {
         timer = setInterval(timerFn, 500);
     }
     
-    var createCanvas = function(dims) {
-        var cEl = document.createElement('canvas');
-        cEl.setAttribute('width',  dims[0]);
-        cEl.setAttribute('height', dims[1]);
-        return cEl;
-    };
+    
     
     var getDims = function(el) {
         return [
             el.offsetWidth,
             el.offsetHeight
         ];
+    };
+    
+    var seq = function(n){
+        var arr = new Array(n);
+        for (var i = 0; i < n; ++i) {
+            arr[i] = i;
+        }
+        return arr;
     };
     
     var clone = function(o) {
@@ -80,49 +86,36 @@ window.focusPoint = function(o) {
         return true;
     };
     
-    var maximize = function(maxSz, imgSz) {
-        var arI = imgSz[0] / imgSz[1];
-        var arM = maxSz[0] / maxSz[1];
-        var s = (arI > arM) ? maxSz[0] / imgSz[0] : maxSz[1] / imgSz[1];
-        var d =[ parseInt(imgSz[0] * s + 0.5, 10),
-                         parseInt(imgSz[1] * s + 0.5, 10) ]; // offset
-        var o = [ ~~( (maxSz[0] - d[0]) / 2),
-                            ~~( (maxSz[1] - d[1]) / 2) ]; // dims
-        return {o:o, d:d};
+    var calcArea = function(p) {
+        return p.d[0] * p.d[1];
     };
     
-    var wDims = getDims(bEl);
-    var iDims;
+    var areaSort = function(a, b) {
+        return calcArea(a) - calcArea(b);
+    };
     
-    var onReady = function() {
-        var dims = maximize(wDims, iDims);
-        var selected = [];
-        var nrMoves = 0;
-        var hintsEl;
+    var createTile = function(origPart, imgEl) {
+        var o = origPart;
+        var el = document.createElement('canvas');
+        el.setAttribute('width',  origPart.d[0]);
+        el.setAttribute('height', origPart.d[1]);
+        var ctx = el.getContext('2d');
+        //drawImage(image, sx,sy, sw,sh, dx,dy, dw,dh)
+        ctx.drawImage(imgEl, o.o[0], o.o[1], o.d[0], o.d[1], 0, 0, o.d[0], o.d[1]);
+        return el;
+    };
+    
+    var repositionTile = function(el, part) {
+        el.style.left   = part.o[0] + 'px';
+        el.style.top    = part.o[1] + 'px';
+        el.style.width  = part.d[0] + 'px';
+        el.style.height = part.d[1] + 'px';
+    };
+    
+    var split = function(dims) {
+        var parts = [ {o:[0, 0], d:dims} ];
         
-        cEl = createCanvas(dims.d); // will hold playing area
-        cEl.style.marginLeft = dims.o[0] + 'px';
-        cEl.style.marginTop  = dims.o[1] + 'px';
-        bEl.appendChild(cEl);
-        cCtx = cEl.getContext('2d');
-        cCtx.drawImage(iEl, 0, 0, dims.d[0], dims.d[1]);
-        bEl.removeChild(iEl);
-        
-        var refEl = createCanvas(dims.d); // will hold reference image
-        var refCtx = refEl.getContext('2d');
-        refCtx.drawImage(cEl, 0, 0, dims.d[0], dims.d[1]);
-        
-        var parts = [ {o:[0, 0], d:dims.d.slice()} ];
-        
-        var calcArea = function(p) {
-            return p.d[0] * p.d[1];
-        };
-        
-        var areaSort = function(a, b) {
-            return calcArea(a) - calcArea(b);
-        };
-        
-        var split = function() {
+        var _split = function() {
             var p = parts.pop();
             var axis = (p.d[0] > p.d[1]) ? 0 : 1;
             var cut = Math.round(p.d[axis] / 2);
@@ -140,145 +133,122 @@ window.focusPoint = function(o) {
             parts.push(p1);
             parts.sort(areaSort);
         };
-        for (var i = 0, f = N-1; i < f; ++i) { split(); }
+        for (var i = 0, f = N-1; i < f; ++i) { _split(); }
         
-        // shuffle
-        var partsOrig = clone(parts);
-        var order = new Array(N);
-        for (i = 0; i < N; ++i) {
-            order[i] = i;
-        }
-        for (i = 0; i < SHUFFLE_TIMES; ++i) {
+        return parts;
+    };
+    
+    var onReady = function(imgEl) {
+        var dims = getDims(imgEl);
+        var tileEls, tilesEl;
+        var partsOrig, parts, order;
+        var selected = [];
+        var nrMoves = 0;
+        
+        
+        
+        tilesEl = document.createElement('div');
+        tilesEl.className = 'tiles';
+        tilesEl.style.width  = dims[0] + 'px';
+        tilesEl.style.height = dims[1] + 'px';
+        tilesEl.style.marginLeft = -dims[0]/2 + 'px';
+        tilesEl.style.marginTop  = -dims[1]/2 + 'px';
+        document.body.appendChild(tilesEl);
+        
+        
+        
+        // prepare 
+        partsOrig = split(dims);
+        
+        order = seq(N);
+        seq(SHUFFLE_TIMES).forEach(function() {
             shuffle(order);
-        }
-        for (i = 0; i < N; ++i) {
-            parts[i] = clone( partsOrig[ order[i] ] );
-        }
-
-        if (o.onTilesCreated) {
-            hintsEl = o.onTilesCreated({
-                o:     dims.o,
-                d:     dims.d,
-                tiles: clone(partsOrig)
-            });
-        }
-        else {
-            hintsEl = cEl;
-        }
-
-
-        var drawCell = function(i) {
-            var p = parts[i];     // what is represents
-            var q = partsOrig[i]; // where it is
-            
-            cCtx.drawImage(refEl, p.o[0], p.o[1], p.d[0], p.d[1], q.o[0], q.o[1], q.d[0], q.d[1]); // so sd do dd
-        };
+        });
+        parts = seq(N).map(function(i) {
+            return clone( partsOrig[ order[i] ] );
+        });
         
-        for (i = 0; i < N; ++i) {
-            drawCell(i);
-        }
-
-        var whichTileWasHit = function(pos) {
-            var p;
-            for (var i = 0, f = parts.length; i < f; ++i) {
-                p = partsOrig[i];
-                if (pos[0] >= p.o[0] &&
-                        pos[0] <  p.o[0] + p.d[0] &&
-                        pos[1] >= p.o[1] &&
-                        pos[1] <  p.o[1] + p.d[1]) {
-                    return i;
-                }
-            }
-            return -1;
-        };
-
-        var getPointerPos = function(ev) {
-            ev.preventDefault();
-            ev.stopPropagation();
-            var pos;
-            if (ev.type === 'touchstart') {
-                pos = [ev.touches[0].pageX, ev.touches[0].pageY];
-            }
-            else {
-                pos = [ev.pageX, ev.pageY];
-            }
-            pos[0] -= dims.o[0];
-            pos[1] -= dims.o[1];
-            return pos;
-        };
-
-        var onPointerDown = function(ev) {
-            var pos = getPointerPos(ev);
-            var i = whichTileWasHit(pos);
-            if (i === -1) { return; }
-
+        
+        
+        // create tiles
+        tileEls = new Array(N);
+        seq(N).forEach(function(i) {
+            var el = createTile(partsOrig[i], imgEl);
+            repositionTile(el, parts[i]);
+            el.setAttribute('data-index', i);
+            tileEls[i] = el;
+            tilesEl.appendChild(el);
+        });
+        
+        
+        var animating = false;
+        tilesEl.addEventListener('click', function(ev) {
+            if (animating) { return; }
+            
+            var el = ev.target;
+            var i = parseInt(el.getAttribute('data-index'), 10);
             selected.push(i);
-
+            el.classList.add('selected');
+            
             if (selected.length === 2) {
                 var a = selected[0];
                 var b = selected[1];
-                if (a === b) { return selected.pop(); }
-                //console.log('selected', selected);
+                if (a === b) {
+                    el.classList.remove('selected');
+                    return selected.pop();
+                }
                 
                 ++nrMoves;
 
                 if (o.onNrMovesChanged) {
                     o.onNrMovesChanged(nrMoves);
                 }
-
+                
+                animating = true;
+                
+                repositionTile(tileEls[a], parts[b]);
+                repositionTile(tileEls[b], parts[a]);
+                
                 swap(parts, a, b);
                 swap(order, a, b);
-
-                drawCell(a);
-                drawCell(b);
-
-                //console.log('order', order);
+                
                 if (isSorted(order)) {
                     if (o.complete) {
-                        o.complete({nrMoves:nrMoves, elapsedTime:getElapsedTime()});
+                        o.complete({
+                            nrMoves     : nrMoves,
+                            elapsedTime : getElapsedTime()
+                        });
                     }
                     else {
                         alert(['Completed in ', nrMoves, ' moves and ', getElapsedTime(), ' seconds!'].join(''));
                     }
                 }
-                selected = [];
+                
+                setTimeout(function() {
+                    tileEls[a].classList.remove('selected');
+                    tileEls[b].classList.remove('selected');
+                    selected = [];
+                    animating = false;
+                }, 500);
             }
-        };
-
-        hintsEl.addEventListener('mousedown',  onPointerDown);
-        hintsEl.addEventListener('touchstart', onPointerDown);
+        });
     };
     
-    var iEl = new Image();
-    iEl.onload = function() {
-        iDims = getDims(iEl);
-        onReady();
-    };
-    iEl.onerror = function() {
-        var err = 'Image "' + IMG_URI + '" not found or inaccessible!\n(prefix if with cors.io/ if it\'s a CORS problem)';
-        if (o.onError) {
-            o.onError(err);
-        }
-        else {
-            alert(err);
-        }
-    };
-    iEl.style.visibility = 'hidden';
-    bEl.appendChild(iEl);
-    iEl.src = IMG_URI;
-
-
-
-    // public API
-    return {
-        start: function() {
-
-        },
-        kill:  function() {
-            if (cEl && cEl.parentNode) {
-                cEl.parentNode.removeChild(cEl);
-            }
-            clearInterval(timerFn);
-        }
-    };
+    
+    
+    // fetch image to measure and serve as source for canvas tiles
+    (function() {    
+        var el = new Image();
+        el.onload = function() {
+            onReady(el);
+        };
+        el.onerror = function() {
+            var err = 'Image "' + IMG_URI + '" not found or inaccessible!\n(prefix if with cors.io/ if it\'s a CORS problem)';
+            if (o.onError) { o.onError(err); }
+            else { window.alert(err); }
+        };
+        el.style.visibility = 'hidden';
+        document.body.appendChild(el);
+        el.src = IMG_URI;
+    })();
 };

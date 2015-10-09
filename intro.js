@@ -1,4 +1,4 @@
-(function(window, undefined) {
+(function(w) {
       
     'use strict';
 
@@ -10,19 +10,14 @@
 
 
     var imgUri, nrTiles, cutRatio;
-    var restart, gameInstance;
 
 
 
     var introEl = document.createElement('div');
     introEl.className = 'intro';
     introEl.innerHTML = [
-        '<button>intro</button>',
-        '<div class="content">',
-            '<p>',
-                'bla bla bla',
-            '</p>',
-            '<hr/>',
+        '<button>config</button>',
+        '<div class="content hidden">',
             '<label>image:</label><input type="text" class="img-uri" value=""><br/>',
             '<label>difficulty:</label><select class="difficulty">',
                 '<option value="1">easy</option>',
@@ -67,8 +62,8 @@
     
 
     var toHash = function(h) {
-        location.hash = h;
         localStorage.setItem('focusPoint', h);
+        location.hash = h;
     };
 
     var onHashChange = function(ev) {
@@ -98,40 +93,29 @@
         imgUriEl.value = imgUri;
         difficultyEl.value = (nrTiles === 20) ? 1 : (nrTiles === 40) ? 2 : 3;
 
-        toHash( h.join(' ') );
+        //toHash( h.join(' ') );
 
-        restart();
-    };
-
-    
-
-    restart = function() {
-        if (gameInstance) {
-            gameInstance.kill();
-            var t;
-            t = QS('.hints'); if (t) { t.parentNode.removeChild(t); }
+        if (ev) {
+            location.reload(true);
         }
-
-        if ('console' in window && 'log' in window.console) {
-            console.log('Calling focusPoint with:\n* imageUri: "%s"\n* nrTiles:  %d\n* cutRatio: %f', imgUri, nrTiles, cutRatio);
-        }
-
-        gameInstance = window.focusPoint({
+        
+        window.focusPoint({
             imgUri:               imgUri,
             nrTiles:              nrTiles,
             cutRatio:             cutRatio,
 
             onElapsedTimeChanged: window.updateElapsedTime,
             onNrMovesChanged:     window.updateNrMoves,
-            onError:              function(err) { alert(err); },
+            onError:              function(err) { window.alert(err); },
             onTilesCreated:       window.tilesCreated,
             onGameCompleted:      window.gameCompleted
         });
-          
     };
+    
+    
 
-
-
-    window.addEventListener('hashchange', onHashChange);
+    w.addEventListener('hashchange', onHashChange);
+    
     onHashChange();
-})(window);
+    
+})(this);
