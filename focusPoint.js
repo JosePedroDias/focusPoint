@@ -7,7 +7,6 @@ window.focusPoint = function(o) {
     if (!o.imgUri) {
         var err = 'imgUri argument is required!';
         if (o.onError) { o.onError(err); }
-        else { window.alert(err); }
         return;
     }
 
@@ -17,6 +16,7 @@ window.focusPoint = function(o) {
     var N             = o.nrTiles  || 20;
     var CUT_RATIO     = o.cutRatio || 0.25; // 0 < cr < 0.5
     var SHUFFLE_TIMES = N;
+    var FILL_RATIO    = 0.9;
 
     
     
@@ -73,12 +73,6 @@ window.focusPoint = function(o) {
         arr.splice(f, 0, val);
     };
 
-    /*var shuffleX = function(arr) {
-        var a = rndInt(arr.length);
-        var b = rndInt(arr.length);
-        swap(arr, a, b);
-    };*/
-
     var isSorted = function(arr) {
         for (var i = 0, f = arr.length; i < f; ++i) {
             if (arr[i] !== i) { return false; }
@@ -92,24 +86,6 @@ window.focusPoint = function(o) {
     
     var areaSort = function(a, b) {
         return calcArea(a) - calcArea(b);
-    };
-    
-    var createTile = function(origPart, imgEl) {
-        var o = origPart;
-        var el = document.createElement('canvas');
-        el.setAttribute('width',  origPart.d[0]);
-        el.setAttribute('height', origPart.d[1]);
-        var ctx = el.getContext('2d');
-        //drawImage(image, sx,sy, sw,sh, dx,dy, dw,dh)
-        ctx.drawImage(imgEl, o.o[0], o.o[1], o.d[0], o.d[1], 0, 0, o.d[0], o.d[1]);
-        return el;
-    };
-    
-    var repositionTile = function(el, part) {
-        el.style.left   = part.o[0] + 'px';
-        el.style.top    = part.o[1] + 'px';
-        el.style.width  = part.d[0] + 'px';
-        el.style.height = part.d[1] + 'px';
     };
     
     var split = function(dims) {
@@ -138,6 +114,34 @@ window.focusPoint = function(o) {
         return parts;
     };
     
+    var createTile = function(origPart, imgEl) {
+        var o = origPart;
+        var el = document.createElement('canvas');
+        el.setAttribute('width',  origPart.d[0]);
+        el.setAttribute('height', origPart.d[1]);
+        var ctx = el.getContext('2d');
+        ctx.drawImage(imgEl, o.o[0], o.o[1], o.d[0], o.d[1], 0, 0, o.d[0], o.d[1]);
+        return el;
+    };
+    
+    var repositionTile = function(el, part) {
+        el.style.left   = part.o[0] + 'px';
+        el.style.top    = part.o[1] + 'px';
+        el.style.width  = part.d[0] + 'px';
+        el.style.height = part.d[1] + 'px';
+    };
+    
+    var adjustSize = function(tilesEl, dims) {
+        var sDims = [
+            ~~(window.innerWidth  * FILL_RATIO),
+            ~~(window.innerHeight * FILL_RATIO)
+        ];
+        var sX = sDims[0] / dims[0];
+        var sY = sDims[1] / dims[1];
+        var s = Math.min(sX, sY);
+        tilesEl.style.transform = ['scale(', s, ', ', s, ')'].join('');
+    };
+    
     var onReady = function(imgEl) {
         var dims = getDims(imgEl);
         var tileEls, tilesEl;
@@ -146,18 +150,17 @@ window.focusPoint = function(o) {
         var nrMoves = 0;
         
         
-        
+        // create container
         tilesEl = document.createElement('div');
         tilesEl.className = 'tiles';
         tilesEl.style.width  = dims[0] + 'px';
         tilesEl.style.height = dims[1] + 'px';
         tilesEl.style.marginLeft = -dims[0]/2 + 'px';
         tilesEl.style.marginTop  = -dims[1]/2 + 'px';
-        document.body.appendChild(tilesEl);
+
         
         
-        
-        // prepare 
+        // prepare logic parts
         partsOrig = split(dims);
         
         order = seq(N);
@@ -170,7 +173,7 @@ window.focusPoint = function(o) {
         
         
         
-        // create tiles
+        // create visual tiles
         tileEls = new Array(N);
         seq(N).forEach(function(i) {
             var el = createTile(partsOrig[i], imgEl);
@@ -179,6 +182,15 @@ window.focusPoint = function(o) {
             tileEls[i] = el;
             tilesEl.appendChild(el);
         });
+        
+        
+        
+        document.body.appendChild(tilesEl);
+        adjustSize(tilesEl, dims);
+        window.addEventListener('resize', function() {
+            adjustSize(tilesEl, dims);
+        });
+        
         
         
         var animating = false;
@@ -213,14 +225,13 @@ window.focusPoint = function(o) {
                 swap(order, a, b);
                 
                 if (isSorted(order)) {
+                    clearInterval(timer);
+                
                     if (o.complete) {
                         o.complete({
                             nrMoves     : nrMoves,
                             elapsedTime : getElapsedTime()
                         });
-                    }
-                    else {
-                        alert(['Completed in ', nrMoves, ' moves and ', getElapsedTime(), ' seconds!'].join(''));
                     }
                 }
                 
@@ -245,7 +256,6 @@ window.focusPoint = function(o) {
         el.onerror = function() {
             var err = 'Image "' + IMG_URI + '" not found or inaccessible!\n(prefix if with cors.io/ if it\'s a CORS problem)';
             if (o.onError) { o.onError(err); }
-            else { window.alert(err); }
         };
         el.style.visibility = 'hidden';
         document.body.appendChild(el);

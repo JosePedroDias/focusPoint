@@ -100,15 +100,16 @@
         }
         
         window.focusPoint({
-            imgUri:               imgUri,
-            nrTiles:              nrTiles,
-            cutRatio:             cutRatio,
+            // params
+            imgUri               : imgUri,
+            nrTiles              : nrTiles,
+            cutRatio             : cutRatio,
 
-            onElapsedTimeChanged: window.updateElapsedTime,
-            onNrMovesChanged:     window.updateNrMoves,
-            onError:              function(err) { window.alert(err); },
-            onTilesCreated:       window.tilesCreated,
-            onGameCompleted:      window.gameCompleted
+            // handled by hud
+            onElapsedTimeChanged : window.updateElapsedTime,
+            onNrMovesChanged     : window.updateNrMoves,
+            onGameCompleted      : window.gameCompleted,
+            onError              : function(err) { window.alert(err); }
         });
     };
     
