@@ -1,14 +1,8 @@
 (function(w) {
     
     'use strict';
-    
-    var hudEl = document.createElement('div');
-    hudEl.className = 'hud';
-    hudEl.innerHTML = [
-        '<label>elapsed time:</label> <span class="elapsed-time">0</span>',
-        '<label>nr. moves:</label>    <span class="nr-moves">0</span>'
-    ].join('<br/>');
-    document.body.appendChild(hudEl);
+
+
 
     var QS = function(s) {
         return document.querySelector(s);
@@ -29,8 +23,31 @@
         return parts.join(':');
     };
 
+
+    
+    var hudEl = document.createElement('div');
+    hudEl.className = 'hud';
+    hudEl.innerHTML = [
+        '<label>time:</label> <span class="elapsed-time">0</span>',
+        '<label>moves:</label> <span class="nr-moves">0</span>'
+    ].join('<br/>');
+    document.body.appendChild(hudEl);
+
+    var hud2El = document.createElement('div');
+    hud2El.className = 'hud2';
+    hud2El.innerHTML = [
+        '<button>return</button>'
+    ].join('');
+    document.body.appendChild(hud2El);
+
+
+
     var elapsedTimeEl = QS('.hud .elapsed-time');
     var nrMovesEl     = QS('.hud .nr-moves');
+
+    QS('.hud2 button').addEventListener('click', function() {
+        location.assign('index.html');
+    });
 
     w.updateElapsedTime = function(t) {
         elapsedTimeEl.innerHTML = formatTime(t);

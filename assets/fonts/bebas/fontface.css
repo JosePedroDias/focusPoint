@@ -1,0 +1,12 @@
+@font-face {
+    font-family: 'bebasregular';
+    src: url('bebas.eot');
+    src: url('bebas.eot?#iefix') format('embedded-opentype'),
+         url('bebas.woff') format('woff'),
+         url('bebas.ttf') format('truetype'),
+         url('bebas.svg#bebasregular') format('svg');
+    font-weight: normal;
+    font-style: normal;
+
+}
+

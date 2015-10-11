@@ -200,15 +200,23 @@ window.focusPoint = function(o) {
             var el = ev.target;
             var i = parseInt(el.getAttribute('data-index'), 10);
             selected.push(i);
-            el.classList.add('selected');
-            
-            if (selected.length === 2) {
+
+            if (selected.length === 1) {
+                el.classList.add('selected');
+            }
+            else if (selected.length === 2) {
                 var a = selected[0];
                 var b = selected[1];
                 if (a === b) {
-                    el.classList.remove('selected');
-                    return selected.pop();
+                    tileEls[a].classList.remove('selected');
+                    selected = [];
+                    return;
                 }
+
+                tileEls[a].classList.remove('selected');
+                tileEls[b].classList.remove('selected');
+                tileEls[b].classList.add('moving');
+                tileEls[b].classList.add('moving');
                 
                 ++nrMoves;
 
@@ -217,18 +225,20 @@ window.focusPoint = function(o) {
                 }
                 
                 animating = true;
-                
-                repositionTile(tileEls[a], parts[b]);
-                repositionTile(tileEls[b], parts[a]);
-                
-                swap(parts, a, b);
-                swap(order, a, b);
+
+                //setTimeout(function() {
+                    repositionTile(tileEls[a], parts[b]);
+                    repositionTile(tileEls[b], parts[a]);
+
+                    swap(parts, a, b);
+                    swap(order, a, b);
+                //}, 0);
                 
                 if (isSorted(order)) {
                     clearInterval(timer);
                 
-                    if (o.complete) {
-                        o.complete({
+                    if (o.onGameCompleted) {
+                        o.onGameCompleted({
                             nrMoves     : nrMoves,
                             elapsedTime : getElapsedTime()
                         });
@@ -236,9 +246,9 @@ window.focusPoint = function(o) {
                 }
                 
                 setTimeout(function() {
-                    tileEls[a].classList.remove('selected');
-                    tileEls[b].classList.remove('selected');
                     selected = [];
+                    tileEls[a].classList.remove('moving');
+                    tileEls[b].classList.remove('moving');
                     animating = false;
                 }, 500);
             }

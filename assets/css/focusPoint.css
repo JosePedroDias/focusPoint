@@ -6,6 +6,7 @@ body {
     overflow: hidden;
     margin: 0;
     padding: 0;
+    background-color: #444;
 }
 
 .tiles {
@@ -14,13 +15,13 @@ body {
     top:  50%;
 }
 
-canvas:hover {
+.selected,
+.moving {
     z-index: 1;
-    box-shadow: 0 0 12px #F0F, 0 0 6px #F0F;
 }
 
 .selected {
-    z-index: 1;
+    box-shadow: 0 0 18px #F0F, 0 0 12px #F0F, 0 0 6px #F0F;
 }
 
 canvas {

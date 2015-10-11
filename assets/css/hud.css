@@ -1,0 +1,35 @@
+.hud, .hud2 {
+    position: absolute;
+    top:  0.5em;
+    font-family: bebasregular;
+    font-size: 1.3em;
+    z-index: 2;
+    color: #FFF;
+}
+
+.hud {
+    left: 0.5em;
+    text-shadow: 0 0 8px #000, 0 0 4px #000;
+    pointer-events: none;
+}
+
+.hud label {
+    display: inline-block;
+    width: 3.2em;
+    text-align: right;
+    font-weight: bold;
+    padding-right: 0.5em;
+}
+
+.hud2 {
+    right: 0.5em;
+}
+
+.hud2 button {
+    background-color: transparent;
+    color: #FFF;
+    padding: 0.125em 0.25em;
+    font-family: bebasregular;
+    font-size: 1.1em;
+    border-width: 0;
+}
