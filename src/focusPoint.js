@@ -271,4 +271,7 @@ window.focusPoint = function(o) {
         document.body.appendChild(el);
         el.src = IMG_URI;
     })();
+
+    // disallow scrolling
+    document.addEventListener('touchmove', function(e) { e.preventDefault(); }, false);
 };
