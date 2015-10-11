@@ -1,0 +1,67 @@
+html, body {
+    height: 100%;
+}
+
+body {
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+    font-family: sans-serif;
+    color: #FFF;
+    background-color: #444;
+}
+
+h1 {
+    font-size: 1.3em;
+    text-align: center;
+}
+
+.flex-list {
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-flex-direction: column;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    -webkit-flex-wrap: nowrap;
+    -ms-flex-wrap: nowrap;
+    flex-wrap: nowrap;
+    -webkit-justify-content: center;
+    -ms-flex-pack: center;
+    justify-content: center;
+    -webkit-align-content: stretch;
+    -ms-flex-line-pack: stretch;
+    align-content: stretch;
+    -webkit-align-items: center;
+    -ms-flex-align: center;
+    align-items: center;
+}
+
+.flex-list-item {
+    /* -webkit-order: 0;
+    -ms-flex-order: 0;
+             order: 0;*/
+
+    /*-webkit-flex: 0 1 auto;
+        -ms-flex: 0 1 auto;
+            flex: 0 1 auto;*/
+
+    /* -webkit-align-self: auto;
+    -ms-flex-item-align: auto;
+             align-self: auto;*/
+}
+
+.notice {
+    font-style: italic;
+    font-size: 0.6em;
+}
+
+a {
+    color: #CCC;
+    text-decoration-style: dotted;
+}
+
+li > a:nth-child(1) {
+    display: inline-block;
+    width: 7em;
+}
