@@ -1,3 +1,2 @@
 zip:
-	zip focusPoint.zip *.html *.css *.js *.jpg
-
+	zip -r focusPoint.zip *.html assets src
